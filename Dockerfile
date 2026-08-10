@@ -23,7 +23,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
         "langchain[openai]" \
         langchain-text-splitters \
         requests \
-        numpy
+        numpy \
+        fastapi
 
 # Default command (change if your entry point differs)
 CMD ["python", "main.py"]

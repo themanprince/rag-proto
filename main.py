@@ -4,6 +4,8 @@ from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
+from fastapi import FastAPI
+import uvicorn
 
 
 def load_sample(path = "./sample")
@@ -22,5 +24,16 @@ def load_sample(path = "./sample")
 	return docs
 
 
-docs = load_sample()
-print(f"Loaded {len(docs)} samples.")
+app = FastAPI()
+
+@app.get("/")
+def home():
+	docs = load_sample()
+	return {"message": f"Loaded {len(docs)} samples."}
+
+
+if __name__ == "__main__":
+	port = int(os.environ.get("PORT", 8000))
+
+	uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
