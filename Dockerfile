@@ -24,7 +24,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
         langchain-text-splitters \
         requests \
         numpy \
-        fastapi
+        fastapi \
+			uvicorn
 
 # Default command (change if your entry point differs)
 CMD ["python", "main.py"]
