@@ -9,14 +9,18 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 
+
 # Load the environment variables from the .env fil
 load_dotenv()
 
+logs_to_return = []
+add_log = logs_to_return.append
 
 def load_sample(path = "./sample"):
 	docs: list[Document] = []
 	dir_path = Path(path)
 	if not dir_path.exists():
+		add_log(f"got here so path does not exist ({dir_path})")
 		return docs
 
 
@@ -24,7 +28,7 @@ def load_sample(path = "./sample"):
 		if file_path.is_file():
 			content = file_path.read_text(encoding="utf-8")
 			source = file_path.name
-			print(f"---Just read {source} ---")
+			add_log(f"---Just read {source} ---")
 		
 			docs.append(Document(page_content=content, metadata={"source": source}))
 	
@@ -36,7 +40,10 @@ app = FastAPI()
 @app.get("/")
 def home():
 	docs = load_sample()
-	return {"message": f"Loaded {len(docs)} samples."}
+	return {
+		"message": f"Loaded {len(docs)} samples.",
+		"logs": logs_to_return
+	}
 
 
 if __name__ == "__main__":
