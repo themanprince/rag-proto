@@ -6,24 +6,27 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
 from fastapi import FastAPI
 import uvicorn
+import os
 from dotenv import load_dotenv
 
 # Load the environment variables from the .env fil
 load_dotenv()
 
 
-def load_sample(path = "./sample")
-	# Define the directory path
-	dir_path = Path(path)
+def load_sample(path = "./sample"):
 	docs: list[Document] = []
+	dir_path = Path(path)
+	if not dir_path.exists():
+		return docs
+
 
 	for file_path in dir_path.iterdir():
 	    if file_path.is_file():
 	        content = file_path.read_text(encoding="utf-8")
-		source = file_path.name
+			source = file_path.name
 	        print(f"---Just read {source} ---")
 		
-		docs.append(Document(page_content=content, metadata={"source": source}))
+			docs.append(Document(page_content=content, metadata={"source": source}))
 	
 	return docs
 
