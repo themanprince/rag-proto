@@ -16,7 +16,7 @@ load_dotenv()
 logs_to_return = []
 add_log = logs_to_return.append
 
-def load_sample(path = "./sample"):
+def load_sample(path = "./samples"):
 	docs: list[Document] = []
 	dir_path = Path(path)
 	if not dir_path.exists():
