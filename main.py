@@ -21,10 +21,10 @@ def load_sample(path = "./sample"):
 
 
 	for file_path in dir_path.iterdir():
-	    if file_path.is_file():
-	        content = file_path.read_text(encoding="utf-8")
+		if file_path.is_file():
+			content = file_path.read_text(encoding="utf-8")
 			source = file_path.name
-	        print(f"---Just read {source} ---")
+			print(f"---Just read {source} ---")
 		
 			docs.append(Document(page_content=content, metadata={"source": source}))
 	
