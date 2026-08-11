@@ -6,6 +6,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pathlib import Path
 from fastapi import FastAPI
 import uvicorn
+from dotenv import load_dotenv
+
+# Load the environment variables from the .env fil
+load_dotenv()
 
 
 def load_sample(path = "./sample")
