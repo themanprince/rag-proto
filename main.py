@@ -44,6 +44,9 @@ def check_and_run_ingestion_pipeline():
 		return
 	
 	docs = load_samples()
+	if not docs:
+		raise HTTPException(status=500, detail="unable to get files for ingesting")
+	
 	text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 	all_splits = text_splitter.split_documents(docs)
 	add_log(f"Split documentation into {len(all_splits)} chunks.")
