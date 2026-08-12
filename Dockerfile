@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
         "langchain[openai]" \
         langchain-text-splitters \
 			"langchain-core" \
+			langchain-huggingface \
 			langchain-google-genai \
         requests \
         numpy \

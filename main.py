@@ -2,6 +2,7 @@ import requests
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_openai import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
@@ -55,7 +56,7 @@ def check_and_run_ingestion_pipeline():
 		add_log("Error! Needed env var not found")
 		raise HTTPException(status=500, detail="needed env var not found.")
 		
-	embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+	embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2", encode_kwargs={"normalize_embeddings": True},)
 	vector_store = InMemoryVectorStore(embeddings)
 	vector_store.add_documents(documents=all_splits)
 	add_log(f"Indexed {len(all_splits)} chunks")
