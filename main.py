@@ -38,6 +38,8 @@ def load_samples(path = "./samples"):
 ingestion_pipeline_has_been_run = False
 
 def check_and_run_ingestion_pipeline():
+	global ingestion_pipeline_has_been_run
+	
 	if ingestion_pipeline_has_been_run:
 		return
 	
