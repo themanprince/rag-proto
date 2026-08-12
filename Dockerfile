@@ -22,11 +22,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
         deepagents \
         "langchain[openai]" \
         langchain-text-splitters \
+			"langchain-core" \
+			langchain-google-genai
         requests \
         numpy \
         fastapi \
 		uvicorn \
-		python-dotenv
+		python-dotenv 
 
 # Default command (change if your entry point differs)
 CMD ["python", "main.py"]
