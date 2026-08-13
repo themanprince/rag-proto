@@ -1,8 +1,7 @@
 import requests
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_openai import OpenAIEmbeddings
-from langchain-voyageai import VoyageAIEmbeddings
+from langchain_voyageai import VoyageAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
 from pathlib import Path
