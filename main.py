@@ -2,8 +2,7 @@ import requests
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_openai import OpenAIEmbeddings
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain-voyageai import VoyageAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
 from pathlib import Path
@@ -52,11 +51,11 @@ def check_and_run_ingestion_pipeline():
 	all_splits = text_splitter.split_documents(docs)
 	add_log(f"Split documentation into {len(all_splits)} chunks.")
 	
-	if not os.environ.get("GOOGLE_API_KEY"):
+	if not os.environ.get("VOYAGE_API_KEY"):
 		add_log("Error! Needed env var not found")
 		raise HTTPException(status=500, detail="needed env var not found.")
 		
-	embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2", encode_kwargs={"normalize_embeddings": True},)
+	embeddings = VoyageAIEmbeddings(model="voyage-3")
 	vector_store = InMemoryVectorStore(embeddings)
 	vector_store.add_documents(documents=all_splits)
 	add_log(f"Indexed {len(all_splits)} chunks")
