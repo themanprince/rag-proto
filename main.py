@@ -4,11 +4,13 @@ from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_voyageai import VoyageAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_qdrant import QdrantVectorStore
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import os
 from dotenv import load_dotenv
+from .pipline_has_run_check import PipelineHasRunCheck
 
 
 # Load the environment variables from the .env fil
@@ -34,14 +36,16 @@ def load_samples(path = "./samples"):
 	return docs
 
 
-ingestion_pipeline_has_been_run = False
-
 def check_and_run_ingestion_pipeline():
-	global ingestion_pipeline_has_been_run
+	pipline_has_run_check = PipelineHasRunCheck()
 	
-	if ingestion_pipeline_has_been_run:
+	pipeline_has_already_been_run = pipeline_has_run_check.check()
+	
+	if pipeline_has_already_been_run:
+		add_log("Pipeline has already been run")
 		return
 	
+	add_log("Got here so pipeline has not already been run")
 	docs = load_samples()
 	if not docs:
 		raise HTTPException(status=500, detail="unable to get files for ingesting")
@@ -55,11 +59,16 @@ def check_and_run_ingestion_pipeline():
 		raise HTTPException(status=500, detail="needed env var not found.")
 		
 	embeddings = VoyageAIEmbeddings(model="voyage-3")
-	vector_store = InMemoryVectorStore(embeddings)
-	vector_store.add_documents(documents=all_splits)
+	qdrant = QdrantVectorStore.from_documents(
+		all_splits,
+		embeddings,
+		url="https://beed57ca-fb89-4356-b2a9-1307eb987f46.australia-southeast1-0.gcp.cloud.qdrant.io",
+		prefer_grpc = True,
+		collection_name = "VectorStore1"
+	)
 	add_log(f"Indexed {len(all_splits)} chunks")
 	
-	ingestion_pipeline_has_been_run = True
+	pipeline_has_run_check.mark_as_run()
 	
 
 

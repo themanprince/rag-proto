@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
         langchain-text-splitters \
 			"langchain-core" \
 			langchain-voyageai \
+			langchain-qdrant \
         requests \
         numpy \
         fastapi \
