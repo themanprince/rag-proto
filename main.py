@@ -46,6 +46,8 @@ def check_and_run_ingestion_pipeline():
 			add_log("Error! Needed env var not found")
 			raise HTTPException(status=500, detail="needed env var not found.")
 
+	
+	embeddings = VoyageAIEmbeddings(model="voyage-3")
 		
 	qdrant_collection_name = "VectorStore1"
 	client = QdrantClient(
@@ -54,7 +56,11 @@ def check_and_run_ingestion_pipeline():
 	)
 	if client.collection_exists(qdrant_collection_name):
 		add_log("Pipeline has already been run")
-		return client #vector store
+		return QdrantVectorStore.from_existing_collection(
+		embedding=embeddings,
+		collection_name=qdrant_collection_name,
+		client=client
+	) #vector store
 	
 	add_log("Got here so pipeline has not already been run")
 	docs = load_samples()
@@ -65,7 +71,6 @@ def check_and_run_ingestion_pipeline():
 	all_splits = text_splitter.split_documents(docs)
 	add_log(f"Split documentation into {len(all_splits)} chunks.")
 		
-	embeddings = VoyageAIEmbeddings(model="voyage-3")
 	qdrant = QdrantVectorStore.from_documents(
 		all_splits,
 		embeddings,
@@ -81,7 +86,7 @@ def check_and_run_ingestion_pipeline():
 
 backend = StateBackend()
 
-@tool(parse_docstring=True)
+@tool(parse_docstring=False)
 def search_documentation(query: str) -> str:
 	vector_store = check_and_run_ingestion_pipeline()
 	retrieved_docs = vector_store.similarity_search(query, k=4)
@@ -98,7 +103,10 @@ def search_documentation(query: str) -> str:
 		uploads.append((path, content.encode("utf-8")))
 		saved_paths.append(path)
 	
-	backend.upload_files(uploads)
+	upload_results = backend.upload_files(uploads)
+	failed_paths = [result.path for result in upload_results if result.error]
+	if failed_paths:
+		raise HTTPException(status_code=500, detail=f"Failed to save: {failed_paths}")
 	
 	return (
 		f"Saved {len(saved_paths)} documentation chunks:\n"
@@ -111,7 +119,7 @@ app = FastAPI()
 
 @app.get("/{query}")
 def home(query: str):
-	return search_documentation(query)
+	return search_documentation.invoke({"query": query})
 
 
 if __name__ == "__main__":
