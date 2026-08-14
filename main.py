@@ -5,12 +5,12 @@ from langchain_voyageai import VoyageAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import os
 from dotenv import load_dotenv
-from pipeline_has_run_check import PipelineHasRunCheck
 
 
 # Load the environment variables from the .env fil
@@ -37,11 +37,19 @@ def load_samples(path = "./samples"):
 
 
 def check_and_run_ingestion_pipeline():
-	pipeline_has_run_check = PipelineHasRunCheck()
-	
-	pipeline_has_already_been_run = pipeline_has_run_check.check()
-	
-	if pipeline_has_already_been_run:
+	required_API_keys = ["VOYAGE_API_KEY", "LANGSMITH_API_KEY", "QDRANT_API_KEY", "QDRANT_URL"]
+	for key in required_API_keys:
+		if not os.environ.get(key):
+			add_log("Error! Needed env var not found")
+			raise HTTPException(status=500, detail="needed env var not found.")
+
+		
+	qdrant_collection_name = "VectorStore1"
+	client = QdrantClient(
+		url=os.environ["QDRANT_URL"],
+		api_key = os.environ["QDRANT_API_KEY"]
+	)
+	if client.collection_exists(qdrant_collection_name):
 		add_log("Pipeline has already been run")
 		return
 	
@@ -53,12 +61,6 @@ def check_and_run_ingestion_pipeline():
 	text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 	all_splits = text_splitter.split_documents(docs)
 	add_log(f"Split documentation into {len(all_splits)} chunks.")
-	
-	required_API_keys = ["VOYAGE_API_KEY", "LANGSMITH_API_KEY", "QDRANT_API_KEY", "QDRANT_URL"]
-	for key in required_API_keys:
-		if not os.environ.get(key):
-			add_log("Error! Needed env var not found")
-			raise HTTPException(status=500, detail="needed env var not found.")
 		
 	embeddings = VoyageAIEmbeddings(model="voyage-3")
 	qdrant = QdrantVectorStore.from_documents(
@@ -67,11 +69,9 @@ def check_and_run_ingestion_pipeline():
 		url=os.environ["QDRANT_URL"],
 		api_key = os.environ["QDRANT_API_KEY"],
 		prefer_grpc = False,
-		collection_name = "VectorStore1"
+		collection_name = qdrant_collection_name
 	)
 	add_log(f"Indexed {len(all_splits)} chunks")
-	
-	pipeline_has_run_check.mark_as_run()
 	
 
 
