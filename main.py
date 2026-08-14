@@ -55,7 +55,7 @@ def check_and_run_ingestion_pipeline():
 	add_log(f"Split documentation into {len(all_splits)} chunks.")
 	
 	required_API_keys = ["VOYAGE_API_KEY", "LANGSMITH_API_KEY", "QDRANT_API_KEY", "QDRANT_URL"]
-	for key in required_API_key:
+	for key in required_API_keys:
 		if not os.environ.get(key):
 			add_log("Error! Needed env var not found")
 			raise HTTPException(status=500, detail="needed env var not found.")
