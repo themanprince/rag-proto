@@ -37,7 +37,7 @@ def load_samples(path = "./samples"):
 
 
 def check_and_run_ingestion_pipeline():
-	pipline_has_run_check = PipelineHasRunCheck()
+	pipeline_has_run_check = PipelineHasRunCheck()
 	
 	pipeline_has_already_been_run = pipeline_has_run_check.check()
 	
