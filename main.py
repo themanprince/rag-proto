@@ -10,7 +10,7 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 import os
 from dotenv import load_dotenv
-from .pipeline_has_run_check import PipelineHasRunCheck
+from pipeline_has_run_check import PipelineHasRunCheck
 
 
 # Load the environment variables from the .env fil
