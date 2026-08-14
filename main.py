@@ -5,12 +5,15 @@ from langchain_voyageai import VoyageAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_qdrant import QdrantVectorStore
+from deepagents.backends import StateBackend
+from langchain.tools import tool
 from qdrant_client import QdrantClient
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import os
 from dotenv import load_dotenv
+import uuid
 
 
 # Load the environment variables from the .env fil
@@ -51,7 +54,7 @@ def check_and_run_ingestion_pipeline():
 	)
 	if client.collection_exists(qdrant_collection_name):
 		add_log("Pipeline has already been run")
-		return
+		return client #vector store
 	
 	add_log("Got here so pipeline has not already been run")
 	docs = load_samples()
@@ -73,16 +76,42 @@ def check_and_run_ingestion_pipeline():
 	)
 	add_log(f"Indexed {len(all_splits)} chunks")
 	
+	return qdrant #vector store
+	
+
+backend = StateBackend()
+
+@tool(parse_docstring=True)
+def search_documentation(query: str) -> str:
+	vector_store = check_and_run_ingestion_pipeline()
+	retrieved_docs = vector_store.similarity_search(query, k=4)
+	batch_id = uuid.uuid4().hex[:8]
+	uploads: list[tuple[str, bytes]] = []
+	saved_paths: list[str] = []
+	
+	for index, doc in enumerate(retrieved_docs, start=1):
+		path = f"/retrieved/{batch_id}/chunk_{index}.md"
+		content = (
+			f"# Source: {doc.metadata.get('source', 'unknown')}\n\n"
+			f"{doc.page_content}"
+		)
+		uploads.append((path, content.encode("utf-8")))
+		saved_paths.append(path)
+	
+	backend.upload_files(uploads)
+	
+	return (
+		f"Saved {len(saved_paths)} documentation chunks:\n"
+		+ "\n".join(saved_paths)
+	)
+
 
 
 app = FastAPI()
 
-@app.get("/")
-def home():
-	check_and_run_ingestion_pipeline()
-	return {
-		"logs": logs_to_return
-	}
+@app.get("/{query}")
+def home(query: str):
+	return search_documentation(query)
 
 
 if __name__ == "__main__":
