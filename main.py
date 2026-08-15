@@ -217,7 +217,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan = lifespan)
 
 @app.get("/")
-def home(query: str = "Give a brief overview of the Bible and Quran", request: Request):
+def home(request: Requestquery: str = "Give a brief overview of the Bible and Quran"):
 	result = request.app.state.agent.invoke(
 		{"messages": [HumanMessage(content=query)]}
 	)
