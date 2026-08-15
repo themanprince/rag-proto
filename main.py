@@ -83,18 +83,6 @@ def check_and_run_ingestion_pipeline():
 	add_log(f"Indexed {len(all_splits)} chunks")
 	
 	return qdrant #vector store
-	
-
-vector_store_ref = None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-	global vector_store_ref
-	vector_store_ref = check_and_run_ingestion_pipeline()
-	
-	yield
-	
-	vector_store_ref = None
 
 
 backend = StateBackend()
@@ -111,6 +99,7 @@ def search_documentation(query: str) -> str:
         File paths where retrieved chunks were saved under /retrieved/.
     """
 	
+	vector_store_ref = check_and_run_ingestion_pipeline()
 	retrieved_docs = vector_store_ref.similarity_search(query, k=4)
 	batch_id = uuid.uuid4().hex[:8]
 	uploads: list[tuple[str, bytes]] = []
@@ -147,5 +136,5 @@ def home(query: str):
 if __name__ == "__main__":
 	port = int(os.environ.get("PORT", 8000))
 
-	uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+	uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
 
