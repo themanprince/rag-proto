@@ -86,8 +86,17 @@ def check_and_run_ingestion_pipeline():
 
 backend = StateBackend()
 
-@tool(parse_docstring=False)
+@tool(parse_docstring=True)
 def search_documentation(query: str) -> str:
+	str:
+	"""Search LangChain documentation and save matching chunks to the agent filesystem.
+	
+	Args:
+		query: Natural language search query.
+		
+	Returns:
+		File paths where retrieved chunks were saved under /retrieved/
+	"""
 	vector_store = check_and_run_ingestion_pipeline()
 	retrieved_docs = vector_store.similarity_search(query, k=4)
 	batch_id = uuid.uuid4().hex[:8]
