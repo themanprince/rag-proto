@@ -89,6 +89,7 @@ vector_store_ref = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+	global vector_store_ref
 	vector_store_ref = check_and_run_ingestion_pipeline()
 	
 	yield
