@@ -56,11 +56,11 @@ def check_and_run_ingestion_pipeline():
 	)
 	if client.collection_exists(qdrant_collection_name):
 		add_log("Pipeline has already been run")
-		return QdrantVectorStore.from_existing_collection(
-		embedding=embeddings,
-		collection_name=qdrant_collection_name,
-		client=client
-	) #vector store
+		return QdrantVectorStore(
+			embedding=embeddings,
+			collection_name=qdrant_collection_name,
+			client=client
+		) #vector store
 	
 	add_log("Got here so pipeline has not already been run")
 	docs = load_samples()
