@@ -9,7 +9,8 @@ from deepagents.backends import StateBackend
 from langchain.tools import tool
 from qdrant_client import QdrantClient
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from contextlib import asynccontextmanager
 import uvicorn
 import os
 from dotenv import load_dotenv
@@ -84,11 +85,22 @@ def check_and_run_ingestion_pipeline():
 	return qdrant #vector store
 	
 
+vector_store_ref = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+	vector_store_ref = check_and_run_ingestion_pipeline()
+	
+	yield
+	
+	vector_store_ref = None
+
+
 backend = StateBackend()
 
 @tool(parse_docstring=True)
-def search_documentation(query: str, vector_store) -> str:
-	str:
+def search_documentation(query: str) -> str:
+
 	"""Search LangChain documentation and save matching chunks to the agent filesystem.
 	
 	Args:
@@ -98,7 +110,7 @@ def search_documentation(query: str, vector_store) -> str:
 		File paths where retrieved chunks were saved under /retrieved/
 	"""
 	
-	retrieved_docs = vector_store.similarity_search(query, k=4)
+	retrieved_docs = vector_store_ref.similarity_search(query, k=4)
 	batch_id = uuid.uuid4().hex[:8]
 	uploads: list[tuple[str, bytes]] = []
 	saved_paths: list[str] = []
@@ -123,13 +135,12 @@ def search_documentation(query: str, vector_store) -> str:
 	)
 
 
-vector_store = check_and_run_ingestion_pipeline()
 
-app = FastAPI()
+app = FastAPI(lifespan = lifespan)
 
 @app.get("/{query}")
 def home(query: str):
-	return search_documentation.invoke({"query": query, "vector_store": vector_store})
+	return search_documentation.invoke({"query": query})
 
 
 if __name__ == "__main__":
