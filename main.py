@@ -87,7 +87,7 @@ def check_and_run_ingestion_pipeline():
 backend = StateBackend()
 
 @tool(parse_docstring=True)
-def search_documentation(query: str) -> str:
+def search_documentation(query: str, vector_store) -> str:
 	str:
 	"""Search LangChain documentation and save matching chunks to the agent filesystem.
 	
@@ -97,7 +97,7 @@ def search_documentation(query: str) -> str:
 	Returns:
 		File paths where retrieved chunks were saved under /retrieved/
 	"""
-	vector_store = check_and_run_ingestion_pipeline()
+	
 	retrieved_docs = vector_store.similarity_search(query, k=4)
 	batch_id = uuid.uuid4().hex[:8]
 	uploads: list[tuple[str, bytes]] = []
@@ -123,12 +123,13 @@ def search_documentation(query: str) -> str:
 	)
 
 
+vector_store = check_and_run_ingestion_pipeline()
 
 app = FastAPI()
 
 @app.get("/{query}")
 def home(query: str):
-	return search_documentation.invoke({"query": query})
+	return search_documentation.invoke({"query": query, "vector_store": vector_store})
 
 
 if __name__ == "__main__":
