@@ -126,7 +126,7 @@ def search_documentation(query: str) -> str:
 
 
 
-app = FastAPI(lifespan = lifespan)
+app = FastAPI()
 
 @app.get("/{query}")
 def home(query: str):
