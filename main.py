@@ -199,7 +199,7 @@ chunk_analyst_subagent = {
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-	model = init_chat_model(model="google_genai:gemini-3.6-flash")
+	model = init_chat_model(model="openrouter:nvidia/nemotron-3-ultra-550b-a55b:free")
 
 	app.state.agent = create_deep_agent(
 		model=model,
