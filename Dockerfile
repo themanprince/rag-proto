@@ -26,6 +26,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 			langchain-voyageai \
 			langchain-qdrant \
 			qdrant-client \
+			langchain-openrouter \
         requests \
         numpy \
         fastapi \
